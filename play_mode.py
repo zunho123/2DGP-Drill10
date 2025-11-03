@@ -4,15 +4,15 @@ from boy import Boy
 from grass import Grass
 import game_world
 import game_framework
+import random
 
-bird = None
+birds = []
 boy = None
+
 
 def handle_events():
     global running
-
-    event_list = get_events()
-    for event in event_list:
+    for event in get_events():
         if event.type == SDL_QUIT:
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
@@ -32,8 +32,13 @@ def init():
     boy = Boy()
     game_world.add_object(boy, 1)
 
-    bird = Bird()
-    game_world.add_object(bird, 2)
+    x = Bird.LEFT
+    top_y = Bird.TOP_Y
+
+    birds = [Bird(x=x, y=top_y - random.randint(0, 300)) for _ in range(10)]
+
+    for b in birds:
+        game_world.add_object(b, 2)
 
 def update():
     game_world.update()
@@ -46,6 +51,8 @@ def draw():
 def finish():
     game_world.clear()
 
-def pause(): pass
-def resume(): pass
+def pause():
+    pass
+def resume():
+    pass
 

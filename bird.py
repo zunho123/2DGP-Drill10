@@ -21,10 +21,11 @@ class Bird:
     REND_W = 33
     REND_H = 25
 
-    def __init__(self):
+    def __init__(self, x=None, y=None):
         if Bird.image is None:
             Bird.image = load_image('bird_animation.png')
-        self.x, self.y = self.LEFT, self.TOP_Y
+        self.x = self.LEFT if x is None else x
+        self.y = self.TOP_Y if y is None else y
         self.dir = 1
         self.frame = 0.0
         self.w = Bird.image.w // self.FRAME_COLS

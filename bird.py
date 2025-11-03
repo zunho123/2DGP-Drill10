@@ -29,7 +29,7 @@ class Bird:
         self.w = Bird.image.w // self.FRAME_COLS
         self.h = Bird.image.h // self.FRAME_ROWS
         self.TOTAL_FRAMES = self.FRAME_COLS * self.FRAME_ROWS
-        self.FRAMES_PER_ACTION = self.TOTAL_FRAMES
+        self.FRAMES_PER_ACTION = self.TOTAL_FRAMES - 1
         self.FLY_RIGHT = FlyRight(self)
         self.FLY_LEFT  = FlyLeft(self)
         self.state_machine = StateMachine(
@@ -60,6 +60,7 @@ class FlyRight:
         if self.b.x >= self.b.RIGHT:
             self.b.x = self.b.RIGHT
             self.b.handle_state_event(('EDGE', None))
+
         self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * ACTION_PER_TIME * dt) % self.b.FRAMES_PER_ACTION
 
     def draw(self):

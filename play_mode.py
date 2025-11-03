@@ -32,10 +32,10 @@ def init():
     boy = Boy()
     game_world.add_object(boy, 1)
 
-    x = Bird.LEFT
+    base_x = Bird.LEFT
     top_y = Bird.TOP_Y
 
-    birds = [Bird(x=x + random.randint(-5, 5), y=top_y - random.randint(0, 150)) for _ in range(10)]
+    birds = [Bird(x = base_x + random.randint(-5, 5), y = top_y - random.randint(0, 150)) for _ in range(10)]
 
     for b in birds:
         game_world.add_object(b, 2)

@@ -10,8 +10,7 @@ FLY_SPEED_KMPH = 40.0
 FLY_SPEED_MPM  = (FLY_SPEED_KMPH * 1000.0 / 60.0)
 FLY_SPEED_MPS  = (FLY_SPEED_MPM / 60.0)
 FLY_SPEED_PPS  = (FLY_SPEED_MPS * PIXEL_PER_METER)
-TIME_PER_ACTION = 0.5
-ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+TIME_PER_ACTION = 14.0
 
 class Bird:
     image = None
@@ -61,7 +60,7 @@ class FlyRight:
         if self.b.x >= self.b.RIGHT:
             self.b.x = self.b.RIGHT
             self.b.handle_state_event(('EDGE', None))
-        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * ACTION_PER_TIME * dt) % self.b.FRAMES_PER_ACTION
+        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * TIME_PER_ACTION * dt) % self.b.FRAMES_PER_ACTION
 
     def draw(self):
         idx = int(self.b.frame) % self.b.FRAMES_PER_ACTION
@@ -82,7 +81,7 @@ class FlyLeft:
         if self.b.x <= self.b.LEFT:
             self.b.x = self.b.LEFT
             self.b.handle_state_event(('EDGE', None))
-        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * ACTION_PER_TIME * dt) % self.b.FRAMES_PER_ACTION
+        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * TIME_PER_ACTION * dt) % self.b.FRAMES_PER_ACTION
 
     def draw(self):
         idx = int(self.b.frame) % self.b.FRAMES_PER_ACTION

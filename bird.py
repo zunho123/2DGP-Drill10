@@ -8,7 +8,6 @@ def at_edge(e):
 
 PIXEL_PER_METER = 10.0 / 0.3
 FLY_SPEED_KMPH = 40.0
-TIME_PER_ACTION = 14.0
 
 class Bird:
     image = None
@@ -19,7 +18,7 @@ class Bird:
     REND_W = 33
     REND_H = 25
 
-    def __init__(self, x=None, y=None, speed_kmph=None):
+    def __init__(self, x=None, y=None, speed_kmph=None, flap_hz=None):
         if Bird.image is None:
             Bird.image = load_image('bird_animation.png')
         self.x = self.LEFT if x is None else x
@@ -32,6 +31,9 @@ class Bird:
         if speed_kmph is None:
             speed_kmph = random.uniform(FLY_SPEED_KMPH - 5.0, FLY_SPEED_KMPH + 5.0)
         self.speed_pps = (speed_kmph / 3.6) * PIXEL_PER_METER
+        if flap_hz is None:
+            flap_hz = random.uniform(13.0, 15.0)
+        self.flap_hz = flap_hz
         self.FLY_RIGHT = FlyRight(self)
         self.FLY_LEFT  = FlyLeft(self)
         self.state_machine = StateMachine(
@@ -55,15 +57,13 @@ class FlyRight:
     def __init__(self, bird): self.b = bird
     def enter(self, e): self.b.dir = 1
     def exit(self, e):  pass
-
     def do(self):
         dt = game_framework.frame_time
         self.b.x += self.b.speed_pps * dt
         if self.b.x >= self.b.RIGHT:
             self.b.x = self.b.RIGHT
             self.b.handle_state_event(('EDGE', None))
-        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * TIME_PER_ACTION * dt) % self.b.FRAMES_PER_ACTION
-
+        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * self.b.flap_hz * dt) % self.b.FRAMES_PER_ACTION
     def draw(self):
         idx = int(self.b.frame) % self.b.FRAMES_PER_ACTION
         col = idx % self.b.FRAME_COLS
@@ -76,15 +76,13 @@ class FlyLeft:
     def __init__(self, bird): self.b = bird
     def enter(self, e): self.b.dir = -1
     def exit(self, e):  pass
-
     def do(self):
         dt = game_framework.frame_time
         self.b.x -= self.b.speed_pps * dt
         if self.b.x <= self.b.LEFT:
             self.b.x = self.b.LEFT
             self.b.handle_state_event(('EDGE', None))
-        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * TIME_PER_ACTION * dt) % self.b.FRAMES_PER_ACTION
-
+        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * self.b.flap_hz * dt) % self.b.FRAMES_PER_ACTION
     def draw(self):
         idx = int(self.b.frame) % self.b.FRAMES_PER_ACTION
         col = idx % self.b.FRAME_COLS

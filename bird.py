@@ -5,40 +5,38 @@ from state_machine import StateMachine
 def at_edge(e):
     return e[0] == 'EDGE'
 
+PIXEL_PER_METER = (10.0 / 0.3)
+FLY_SPEED_KMPH = 20.0
+FLY_SPEED_MPM  = (FLY_SPEED_KMPH * 1000.0 / 60.0)
+FLY_SPEED_MPS  = (FLY_SPEED_MPM / 60.0)
+FLY_SPEED_PPS  = (FLY_SPEED_MPS * PIXEL_PER_METER)
+TIME_PER_ACTION = 0.5
+ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+
 class Bird:
-
     image = None
-
     FRAME_COLS = 5
     FRAME_ROWS = 3
-    FPS = 12
-
-    LEFT = 50
-    RIGHT = 1550
+    LEFT, RIGHT = 50, 1550
     TOP_Y = 540
-    SPEED = 250
 
     def __init__(self):
         if Bird.image is None:
             Bird.image = load_image('bird_animation.png')
-
         self.x, self.y = self.LEFT, self.TOP_Y
         self.dir = 1
-        self.time = 0.0
-        self.frame = 0
-
+        self.frame = 0.0
         self.w = Bird.image.w // self.FRAME_COLS
         self.h = Bird.image.h // self.FRAME_ROWS
-        self.total_frames = self.FRAME_COLS * self.FRAME_ROWS
-
-        self.fly_right = FlyRight(self)
-        self.fly_left  = FlyLeft(self)
-
+        self.TOTAL_FRAMES = self.FRAME_COLS * self.FRAME_ROWS
+        self.FRAMES_PER_ACTION = self.TOTAL_FRAMES
+        self.FLY_RIGHT = FlyRight(self)
+        self.FLY_LEFT  = FlyLeft(self)
         self.state_machine = StateMachine(
-            self.fly_right,
+            self.FLY_RIGHT,
             {
-                self.fly_right: { at_edge: self.fly_left  },
-                self.fly_left:  { at_edge: self.fly_right },
+                self.FLY_RIGHT: { at_edge: self.FLY_LEFT },
+                self.FLY_LEFT:  { at_edge: self.FLY_RIGHT },
             }
         )
 
@@ -52,55 +50,46 @@ class Bird:
         self.state_machine.draw()
 
 class FlyRight:
-    def __init__(self, bird): self.bird = bird
-    def enter(self, e): self.bird.dir = 1
+    def __init__(self, bird): self.b = bird
+    def enter(self, e): self.b.dir = 1
     def exit(self, e):  pass
 
     def do(self):
         dt = game_framework.frame_time
-        b = self.bird
-
-        b.x += b.SPEED * dt
-        if b.x >= b.RIGHT:
-            b.x = b.RIGHT
-            b.handle_state_event(('EDGE', None))
-
-        b.time += dt
-        b.frame = int(b.time * b.FPS) % b.total_frames
+        self.b.x += FLY_SPEED_PPS * dt
+        if self.b.x >= self.b.RIGHT:
+            self.b.x = self.b.RIGHT
+            self.b.handle_state_event(('EDGE', None))
+        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * ACTION_PER_TIME * dt) % self.b.FRAMES_PER_ACTION
 
     def draw(self):
-        b = self.bird
-        col = b.frame % b.FRAME_COLS
-        row = b.frame // b.FRAME_COLS
-        sx, sy = col * b.w, row * b.h
-        try:
-            Bird.image.clip_draw(sx, sy, b.w, b.h, b.x, b.y)
-        except:
-            Bird.image.clip_draw(sx, sy, b.w, b.h, b.x, b.y)
+        idx = int(self.b.frame)
+        col = idx % self.b.FRAME_COLS
+        row = idx // self.b.FRAME_COLS
+        sy_row = (self.b.FRAME_ROWS - 1 - row)
+        sx, sy = col * self.b.w, sy_row * self.b.h
+        Bird.image.clip_draw(sx, sy, self.b.w, self.b.h, self.b.x, self.b.y)
 
 class FlyLeft:
-    def __init__(self, bird): self.bird = bird
-    def enter(self, e): self.bird.dir = -1
+    def __init__(self, bird): self.b = bird
+    def enter(self, e): self.b.dir = -1
     def exit(self, e):  pass
 
     def do(self):
         dt = game_framework.frame_time
-        b = self.bird
-
-        b.x -= b.SPEED * dt
-        if b.x <= b.LEFT:
-            b.x = b.LEFT
-            b.handle_state_event(('EDGE', None))
-
-        b.time += dt
-        b.frame = int(b.time * b.FPS) % b.total_frames
+        self.b.x -= FLY_SPEED_PPS * dt
+        if self.b.x <= self.b.LEFT:
+            self.b.x = self.b.LEFT
+            self.b.handle_state_event(('EDGE', None))
+        self.b.frame = (self.b.frame + self.b.FRAMES_PER_ACTION * ACTION_PER_TIME * dt) % self.b.FRAMES_PER_ACTION
 
     def draw(self):
-        b = self.bird
-        col = b.frame % b.FRAME_COLS
-        row = b.frame // b.FRAME_COLS
-        sx, sy = col * b.w, row * b.h
+        idx = int(self.b.frame)
+        col = idx % self.b.FRAME_COLS
+        row = idx // self.b.FRAME_COLS
+        sy_row = (self.b.FRAME_ROWS - 1 - row)
+        sx, sy = col * self.b.w, sy_row * self.b.h
         try:
-            Bird.image.clip_composite_draw(sx, sy, b.w, b.h, 0, 'h', b.x, b.y, b.w, b.h)
+            Bird.image.clip_composite_draw(sx, sy, self.b.w, self.b.h, 0, 'h', self.b.x, self.b.y, self.b.w, self.b.h)
         except:
-            Bird.image.clip_draw(sx, sy, b.w, b.h, b.x, b.y)
+            Bird.image.clip_draw(sx, sy, self.b.w, self.b.h, self.b.x, self.b.y)

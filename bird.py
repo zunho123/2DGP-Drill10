@@ -1,15 +1,13 @@
 from pico2d import load_image
 import game_framework
 from state_machine import StateMachine
+import random
 
 def at_edge(e):
     return e[0] == 'EDGE'
 
-PIXEL_PER_METER = (10.0 / 0.3)
+PIXEL_PER_METER = 10.0 / 0.3
 FLY_SPEED_KMPH = 40.0
-FLY_SPEED_MPM  = (FLY_SPEED_KMPH * 1000.0 / 60.0)
-FLY_SPEED_MPS  = (FLY_SPEED_MPM / 60.0)
-FLY_SPEED_PPS  = (FLY_SPEED_MPS * PIXEL_PER_METER)
 TIME_PER_ACTION = 14.0
 
 class Bird:
@@ -21,7 +19,7 @@ class Bird:
     REND_W = 33
     REND_H = 25
 
-    def __init__(self, x=None, y=None):
+    def __init__(self, x=None, y=None, speed_kmph=None):
         if Bird.image is None:
             Bird.image = load_image('bird_animation.png')
         self.x = self.LEFT if x is None else x
@@ -31,6 +29,9 @@ class Bird:
         self.w = Bird.image.w // self.FRAME_COLS
         self.h = Bird.image.h // self.FRAME_ROWS
         self.FRAMES_PER_ACTION = 14
+        if speed_kmph is None:
+            speed_kmph = random.uniform(FLY_SPEED_KMPH - 5.0, FLY_SPEED_KMPH + 5.0)
+        self.speed_pps = (speed_kmph / 3.6) * PIXEL_PER_METER
         self.FLY_RIGHT = FlyRight(self)
         self.FLY_LEFT  = FlyLeft(self)
         self.state_machine = StateMachine(
@@ -57,7 +58,7 @@ class FlyRight:
 
     def do(self):
         dt = game_framework.frame_time
-        self.b.x += FLY_SPEED_PPS * dt
+        self.b.x += self.b.speed_pps * dt
         if self.b.x >= self.b.RIGHT:
             self.b.x = self.b.RIGHT
             self.b.handle_state_event(('EDGE', None))
@@ -78,7 +79,7 @@ class FlyLeft:
 
     def do(self):
         dt = game_framework.frame_time
-        self.b.x -= FLY_SPEED_PPS * dt
+        self.b.x -= self.b.speed_pps * dt
         if self.b.x <= self.b.LEFT:
             self.b.x = self.b.LEFT
             self.b.handle_state_event(('EDGE', None))

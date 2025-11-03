@@ -1,6 +1,7 @@
 from pico2d import *
 import game_world
 import game_framework
+import math
 
 PIXEL_PER_METER = (1.0 / 0.03)
 GRAVITY = 9.8
